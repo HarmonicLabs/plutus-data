@@ -11,7 +11,7 @@ type Data
     | DataB;
 ```
 
-## exportedf functions
+## exported functions
 
 ```ts
 function hashData(data: Data): Uint8Array;
