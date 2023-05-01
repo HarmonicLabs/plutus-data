@@ -11,6 +11,12 @@ type Data
     | DataB;
 ```
 
+## install
+
+```bash
+npm install @harmoniclabs/plutus-data
+```
+
 ## exported functions
 
 ```ts
