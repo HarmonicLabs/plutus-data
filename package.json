@@ -34,9 +34,11 @@
   "homepage": "https://github.com/HarmonicLabs/plutus-data#readme",
   "dependencies": {
     "@harmoniclabs/biguint": "^1.0.0",
-    "@harmoniclabs/bytestring": "^1.0.0",
     "@harmoniclabs/cbor": "^1.1.0",
     "@harmoniclabs/crypto": "^0.1.0"
+  },
+  "peerDependencies": {
+    "@harmoniclabs/bytestring": "^1.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.18.6",

@@ -7,7 +7,6 @@ import { DataB } from "./DataB";
 import { CborObj, CborArray, CborUInt, CborTag, CborMap, CborNegInt, CborBytes, CborString, Cbor } from "@harmoniclabs/cbor";
 import { assert } from "./utils/assert";
 
-
 export function dataToCborObj( data: Data ): CborObj 
 {
     assert(
