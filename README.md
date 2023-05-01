@@ -10,3 +10,13 @@ type Data
     | DataI
     | DataB;
 ```
+
+## exportedf functions
+
+```ts
+function hashData(data: Data): Uint8Array;
+function dataToCborObj(data: Data): CborObj;
+function dataToCbor(data: Data): CborString;
+function dataFromCborObj(cborObj: CborObj): Data;
+function dataFromCbor(cbor: CanBeCborString): Data;
+```
