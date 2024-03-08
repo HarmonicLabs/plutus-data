@@ -1,24 +1,33 @@
+import { roDescr } from "./utils/roDescr";
+
 export class DataI
 {
-    private _int: bigint
-    get int(): bigint { return Object.freeze( this._int ) as any }
+    readonly int: bigint
 
     constructor( I: number | bigint = 0 )
     {
-        this._int = BigInt( I );
+        I = BigInt( I );
+        Object.defineProperties(
+            this, {
+                int: { value: I, ...roDescr }
+            }
+        )
     }
 
     clone(): DataI
     {
         return new DataI(
-            this._int
-            // .clone()
-            // the constructor clones the fields
+            this.int
         );
     }
 
     toJson()
     {
-        return { int: this._int.toString() }
+        return { int: this.int.toString() }
+    }
+
+    toString(): string
+    {
+        return `I ${this.int.toString()}`;
     }
 }

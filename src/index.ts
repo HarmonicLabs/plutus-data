@@ -7,6 +7,7 @@ export * from "./DataList";
 export * from "./DataMap";
 export * from "./DataPair";
 export * from "./fromCbor";
+export * from "./fromString";
 export * from "./toCbor";
 export * from "./hashData";
 export * from "./toData/interface";

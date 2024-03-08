@@ -3,6 +3,7 @@ import { DataConstr } from "./DataConstr";
 import { DataI } from "./DataI";
 import { DataList } from "./DataList";
 import { DataMap } from "./DataMap";
+import { DataPair } from "./DataPair";
 
 export type Data 
     = DataConstr
@@ -92,7 +93,7 @@ export function eqData( a: Data, b: Data ): boolean
     if( aProto === DataB.prototype )
     {
         return (
-            (a as DataB).bytes.asString === (b as DataB).bytes.asString
+            (a as DataB).bytes.toString() === (b as DataB).bytes.toString()
         );
     }
 
@@ -104,4 +105,33 @@ export function cloneData<D extends Data>( data: D ): D
     if( !isData( data ) ) throw new Error("invalid data while cloning");
 
     return data.clone() as any;
+}
+
+/**
+ * all data instances (from any version) will have a `toJson` method
+ * this function will get back the data of this version if needed
+**/
+export function dataFromJson( json: { [x: string]: any } ): Data
+{
+    if( typeof json !== "object" ) throw new TypeError("unexpected input");
+    
+    const keys = Object.keys( json );
+
+    if( keys.length <= 0 ) throw new TypeError("unexpected input");
+
+    const k = keys[0];
+    
+    if( k === "int" ) return new DataI( json[k] );
+    if( k === "bytes" ) return new DataB( json[k] );
+    if( k === "list" ) return new DataList( json[k].map( dataFromJson ) );
+    if( k === "map" )
+    {
+        const jsonMap = json[k] as ({ k: any, v: any })[];
+        return new DataMap(
+            jsonMap.map(({ k, v }) => new DataPair( dataFromJson( k ), dataFromJson( v ) ))
+        );
+    }
+    if( keys.includes("constr") ) return new DataConstr( json.constr, json.fields.map( dataFromJson ) );
+
+    throw new Error("unknown json format");
 }

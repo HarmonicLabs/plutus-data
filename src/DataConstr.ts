@@ -1,42 +1,47 @@
 import { CanBeUInteger, forceBigUInt } from "@harmoniclabs/biguint";
 import { Data, isData } from "./Data";
 import { assert } from "./utils/assert";
+import { roDescr } from "./utils/roDescr";
 
 export class DataConstr
 {
-    private _constr: bigint;
-    get constr(): bigint { return this._constr };
-
-    private _fields: Data[]
-    get fields(): Data[] { return this._fields.map( dataElem => Object.freeze( dataElem ) as any ) };
+    readonly constr: bigint;
+    readonly fields: Data[];
 
     constructor( constr: CanBeUInteger, fields: Data[] )
     {
         assert(
-            fields.every( isData ),
+            Array.isArray( fields ) && fields.every( isData ),
             "invalid fields passed to constructor"
         );
 
-        this._constr = forceBigUInt( constr );
-        this._fields = fields.map( dataElem =>  dataElem.clone() );
+        Object.defineProperties(
+            this, {
+                constr: { value: forceBigUInt( constr ), ...roDescr },
+                fields: { value: fields, ...roDescr }
+            }
+        );
     }
 
     clone(): DataConstr
     {
         return new DataConstr(
-            this._constr,
-            this._fields
-            //.map( dataElem => dataElem.clone() ) as Data[]
-            // the constructor clones the fields
+            this.constr,
+            this.fields.map( dataElem => dataElem.clone() )
         );
     }
 
     toJson(): any
     {
         return {
-            constr: Number( this._constr ),
-            fields: this._fields.map( f => f.toJson() )
+            constr: Number( this.constr ),
+            fields: this.fields.map( f => f.toJson() )
         }
+    }
+
+    toString(): string
+    {
+        return `Constr ${this.constr.toString()} [${this.fields.map( data => data.toString() ).join(",")}]`
     }
 }
 

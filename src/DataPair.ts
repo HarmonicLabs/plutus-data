@@ -1,29 +1,11 @@
 import { Data, isData } from "./Data";
 import { assert } from "./utils/assert";
+import { roDescr } from "./utils/roDescr";
 
 export class DataPair<DataFst extends Data, DataSnd extends Data>
 {
-    private _fst: DataFst;
-    get fst(): DataFst { return Object.freeze( this._fst ) };
-    set fst( v: DataFst )
-    {
-        assert(
-            isData( v ),
-            `invalid Data passed setting 'fst' in 'DataPair'; value: ${v}`
-        );
-        this._fst = v
-    };
-
-    private _snd: DataSnd;
-    get snd(): DataSnd { return Object.freeze( this._snd ) };
-    set snd( v: DataSnd )
-    {
-        assert(
-            isData( v ),
-            `invalid Data passed setting 'snd' in 'DataPair'; value: ${v}`
-        );
-        this._snd = v
-    };
+    readonly fst: DataFst;
+    readonly snd: DataSnd;
 
     constructor( fst: DataFst, snd: DataSnd )
     {
@@ -31,13 +13,21 @@ export class DataPair<DataFst extends Data, DataSnd extends Data>
             isData( fst ) && isData( snd ),
             `invalid Data passed to 'DataPair' constructor; fst: ${fst}; snd: ${snd}`
         );
-        this._fst = fst.clone() as any;
-        this._snd = snd.clone() as any;
+        Object.defineProperties(
+            this, {
+                fst: { value: fst, ...roDescr },
+                snd: { value: snd, ...roDescr },
+            }
+        );
     }
 
     clone(): DataPair<DataFst,DataSnd>
     {
-        // the constructor clones both fst and snd
-        return new DataPair( this.fst, this.snd ) as any;
+        return new DataPair( this.fst, this.snd );
+    }
+
+    toString(): string
+    {
+        return `(${this.fst.toString()},${this.snd.toString()})`
     }
 }

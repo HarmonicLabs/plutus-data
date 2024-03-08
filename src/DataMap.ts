@@ -1,44 +1,52 @@
 import { Data, isData } from "./Data";
 import { DataPair } from "./DataPair";
 import { assert } from "./utils/assert";
+import { roDescr } from "./utils/roDescr";
 
 
 export class DataMap<DataKey extends Data, DataValue extends Data>
 {
-    private _map: DataPair<DataKey, DataValue>[];
-    get map(): DataPair<DataKey, DataValue>[] { return this._map.map( pair => Object.freeze( pair ) as any ) };
+    readonly map: DataPair<DataKey, DataValue>[];
 
     constructor( map: DataPair<DataKey, DataValue>[] )
     {
         assert(
+            Array.isArray( map ) &&
             map.every( entry =>
-                Object.getPrototypeOf( entry ) === DataPair.prototype &&
+                entry instanceof DataPair &&
                 isData( entry.fst ) && isData( entry.snd )
             ),
             "invalid map passed to 'DataPair' constructor"
         );
 
-        this._map = map.map( pair => pair.clone() );
+        Object.defineProperties(
+            this, {
+                map: { value: map, ...roDescr }
+            }
+        );
     }
 
     clone(): DataMap<DataKey,DataValue>
     {
         return new DataMap(
-            this._map
-            //.map( pair => pair.clone() )
-            // the constructor clones the map
+            this.map.map( pair => pair.clone() )
         );
     }
 
     toJson(): { map: ({ k: any, v: any })[] }
     {
         return {
-            map: this._map.map( ({ fst, snd }) =>
+            map: this.map.map( ({ fst, snd }) =>
                 ({
                     k: fst.toJson(),
                     v: snd.toJson()
                 })
             )
         }
+    }
+
+    toString(): string
+    {
+        return `Map [${this.map.map( dataPair => dataPair.toString() ).join(",")}]`
     }
 }

@@ -1,35 +1,43 @@
 import { Data, isData } from "./Data";
 import { assert } from "./utils/assert";
+import { roDescr } from "./utils/roDescr";
 
 
 export class DataList
 {
-    private _list: Data[]
-    get list(): Data[] { return this._list.map( dataElem => Object.freeze( dataElem ) as any ) };
+    readonly list: Data[]
     
     constructor( list: Data[] )
     {
         assert(
+            Array.isArray( list ) &&
             list.every( isData ),
             "invalid list passed to constructor"
         );
         
-        this._list = list.map( dataElem => dataElem.clone() );
+        Object.defineProperties(
+            this, {
+                list: { value: list, ...roDescr }
+            }
+        );
     }
     
     clone(): DataList
     {
         return new DataList(
-            this._list
-            //.map( dataElem => dataElem.clone() )
-            // the constructor clones the list
+            this.list.map( dataElem => dataElem.clone() )
         );
     }
 
     toJson(): { list: any[] }
     {
         return {
-            list: this._list.map( elem => elem.toJson() )
+            list: this.list.map( elem => elem.toJson() )
         }
+    }
+
+    toString(): string
+    {
+        return `List [${this.list.map( data => data.toString() ).join(",")}]`
     }
 }
