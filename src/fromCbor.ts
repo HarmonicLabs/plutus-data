@@ -26,7 +26,9 @@ export function dataFromCborObj( cborObj: CborObj ): Data
 
     if( cborObj instanceof CborBytes )
     {
-        return new DataB( cborObj.buffer )
+        // if indefinite length (> 64)
+        // `bytes` property already concats the chunks for us 
+        return new DataB( cborObj.bytes );
     }
 
     if( cborObj instanceof CborArray )
