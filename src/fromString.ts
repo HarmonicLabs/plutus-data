@@ -7,11 +7,6 @@ import { DataList } from "./DataList";
 import { DataPair } from "./DataPair";
 import { DataMap } from "./DataMap";
 
-function notEmptyStr( w: string ): boolean
-{
-    return w !== "";
-}
-
 type FormattedBrackets
     = [`Constr ${bigint}`, FormattedBrackets[] ]
     | ["Map", { k: FormattedBrackets, v: FormattedBrackets }[] ]
@@ -52,8 +47,8 @@ function formatStringByBrackets( str: string ): FormattedBrackets
             case "]": {
                 if( nOpen === 0 )
                 {
-                    const elem = str.substring( prev, i );
-                    if( elem.trim() !== "" ) rest.push([ elem ])
+                    const elem = str.substring( prev, i ).trim();
+                    if( elem !== "" ) rest.push([ elem ]);
                     return [ start, rest ] as any;
                 }
                 else nOpen--;
@@ -117,7 +112,8 @@ export function dataFromString( str: string ): Data
 
 function parseWords( words: FormattedBrackets ): Data
 {
-    const start = words[0];
+    let start = words[0];
+    while( start.startsWith("(") ) start = start.slice(1);
     if( start.startsWith("Constr") )
     {
         const [_, idxStr] = start.split(" ");

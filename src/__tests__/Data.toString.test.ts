@@ -1,4 +1,4 @@
-import { Data, DataB, DataConstr, DataI, dataFromCbor, dataFromString } from ".."
+import { Data, DataB, DataConstr, DataI, DataList, DataMap, DataPair, dataFromCbor, dataFromString } from ".."
 
 describe("data.toString", () => {
 
@@ -60,6 +60,43 @@ describe("dataFromString", () => {
         // testData(new DataConstr(0,[]));
         // testData(new DataConstr(0,[]));
     });
+
+    test("correct list", () => {
+
+        const str = `List [I 1,I 2,I 3]`;
+
+        expect( dataFromString( str ) )
+        .toEqual(
+            new DataList([
+                new DataI( 1 ),
+                new DataI( 2 ),
+                new DataI( 3 )
+            ])
+        )
+    });
+
+    test("incorrect map as list", () => {
+
+        const str = `List [(I 1, I 2)]`;
+
+        expect( () => dataFromString( str ) ).toThrow
+    })
+
+    test("map", () => {
+        const str = `Map [ (B #0123, I 12345),
+            (I 789453, B #456789),
+            (List [I -12364689486], Constr 7 [])
+        ]`;
+
+        expect( dataFromString( str ) )
+        .toEqual(
+            new DataMap([
+                new DataPair( new DataB("0123"), new DataI(12345) ),
+                new DataPair( new DataI(789453), new DataB("456789") ),
+                new DataPair( new DataList([ new DataI(-12364689486) ]), new DataConstr(7,[]) )
+            ] as DataPair<Data,Data>[])
+        );
+    })
 
     test("ctx", () => {
 
