@@ -15,13 +15,14 @@ type FormattedBrackets
     // | [`I ${bigint}` ]
     // | [`B #${string}`];
 
-function formatStringByBrackets( str: string ): FormattedBrackets
+function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, length: number }
 {
     const openBracketIdx = str.indexOf("[");
     if( openBracketIdx < 0 )
     {
+        const length = str.trimEnd().length;
         str = str.trim();
-        return [ str ]; // I or B
+        return { formatted: [ str ], length }; // I or B
     }
     const start = str.slice(0, openBracketIdx ).trim();
     
@@ -49,7 +50,10 @@ function formatStringByBrackets( str: string ): FormattedBrackets
                 {
                     const elem = str.substring( prev, i ).trim();
                     if( elem !== "" ) rest.push([ elem ]);
-                    return [ start, rest ] as any;
+                    return {
+                        formatted: [ start, rest ] as FormattedBrackets,
+                        length: i
+                    };
                 }
                 else nOpen--;
                 break;
@@ -59,7 +63,7 @@ function formatStringByBrackets( str: string ): FormattedBrackets
                 {
                     if( !isMap )
                     {
-                        rest.push( formatStringByBrackets( str.substring( prev, i ) ) );
+                        rest.push( formatStringByBrackets( str.substring( prev, i ) ).formatted );
                         prev = i + 1;
                     }
                     else
@@ -68,7 +72,7 @@ function formatStringByBrackets( str: string ): FormattedBrackets
                         {
                             if( str[prev] === "," ) prev++;
                             if( str[prev] === "(" ) prev++;
-                            pairK = formatStringByBrackets( str.substring( prev, i ) );
+                            pairK = formatStringByBrackets( str.substring( prev, i ) ).formatted;
                             prev = i + 1;
                         }
                         else break;
@@ -83,7 +87,7 @@ function formatStringByBrackets( str: string ): FormattedBrackets
             case ")": {
                 if( nOpen === 0 )
                 {
-                    const v = formatStringByBrackets( str.substring( prev, i ) );
+                    const v = formatStringByBrackets( str.substring( prev, i ) ).formatted;
                     prev = i + 1;
 
                     rest.push({ k: pairK!, v });
@@ -98,6 +102,21 @@ function formatStringByBrackets( str: string ): FormattedBrackets
         i++;
     }
 }
+
+/**
+ * parses the result of `data.toString()`
+ * 
+ * @param {string} str data
+ * 
+ * @returns and object with the parsed data and the length of the string used as `offset`
+ */
+export function dataFromStringWithOffset( str: string ): { data: Data, offset: number }
+{
+    const { formatted: words, length } = formatStringByBrackets( str );
+
+    return { data: parseWords( words ), offset: length };
+}
+
 /**
  * parses the result of `data.toString()`
  * 
@@ -105,9 +124,7 @@ function formatStringByBrackets( str: string ): FormattedBrackets
  */
 export function dataFromString( str: string ): Data
 {
-    const words = formatStringByBrackets( str );
-
-    return parseWords( words );
+    return dataFromStringWithOffset( str ).data;
 }
 
 function parseWords( words: FormattedBrackets ): Data
