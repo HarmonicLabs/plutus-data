@@ -18,7 +18,28 @@ type FormattedBrackets
 function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, offset: number }
 {
     const openBracketIdx = str.indexOf("[");
-    if( openBracketIdx < 0 )
+    const bIdx = str.indexOf("B");
+    const iIdx = str.indexOf("I");
+    if(
+        // there is no open bracket
+        openBracketIdx < 0 ||
+        ( // or
+            // we have an open bracket
+            // and B is also present
+            bIdx >= 0 ?
+                // and B is before the open bracket
+                bIdx < openBracketIdx :
+                (
+                    // or I is also present
+                    iIdx >= 0 ?
+                    // and I is before
+                    iIdx < openBracketIdx :
+                    // else open bracket comes first
+                    false
+                )
+
+        )
+    )
     {
         const intMatch = str
             // I\s+             -> "I" followed by one or more space

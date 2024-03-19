@@ -128,7 +128,14 @@ describe("dataFromString", () => {
             expect( result.offset ).toEqual( expected.length );
         });
 
-        test.only("Map [ (B #0123, I 12345), (I 789453, B #456789), (List [I -12364689486], Constr 7 [])]", () => {
+        test("list elem :: B #,Constr 2 [I 32,B #00000000]])", () => {
+
+            const str = "B #,Constr 2 [I 32,B #00000000]])";
+
+            const result = dataFromStringWithOffset( str );
+        })
+
+        test("Map [ (B #0123, I 12345), (I 789453, B #456789), (List [I -12364689486], Constr 7 [])]", () => {
 
             const str = `Map [ (B #0123, I 12345),
                 (I 789453, B #456789),
@@ -140,8 +147,6 @@ describe("dataFromString", () => {
                   (List [I -12364689486], Constr 7 [])
                 ]
         ))`;
-
-           
 
             const result = dataFromStringWithOffset( withExtra );
         })
