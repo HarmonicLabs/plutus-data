@@ -15,14 +15,34 @@ type FormattedBrackets
     // | [`I ${bigint}` ]
     // | [`B #${string}`];
 
-function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, length: number }
+function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, offset: number }
 {
     const openBracketIdx = str.indexOf("[");
     if( openBracketIdx < 0 )
     {
-        const length = str.trimEnd().length;
-        str = str.trim();
-        return { formatted: [ str ], length }; // I or B
+        const intMatch = str
+            // I\s+             -> "I" followed by one or more space
+            // \+?\-?           -> may or may nost start with "+" or "-"
+            // (?<!\.)          -> MUST NOT have dots before
+            // (?<!(#|x)\d*)    -> MUST NOT have before "#" or "x" with 0 or more digits (escluded bls elements and bytestrings)
+            // \d+              -> one or more digits
+            // (?!(\.|x))       -> MUST NOT have dots after or "x" (x excludes "0x" which are bls elems)
+            .match(/I\s+\+?\-?(?<!\.)(?<!(#|x)\d*)\d+(?!(\.|x))/);
+        const bsMatch = str.match(/B\s*#[0-9a-fA-F]*/);
+        if( !bsMatch && ! intMatch ) throw new Error("expected Data I or B; found none");
+        const match = bsMatch && intMatch ?
+            (
+                str.indexOf( bsMatch[0] ) < str.indexOf( intMatch[0] ) ?
+                bsMatch :
+                intMatch
+            ) :
+            (!bsMatch ? intMatch : bsMatch);
+        if( !match ) throw new Error("expected Data I or B; found none");
+        const formattedStr = match[0];
+        return {
+            formatted: [ formattedStr ],
+            offset: str.indexOf( formattedStr ) + formattedStr.length
+        }; // I or B
     }
     const start = str.slice(0, openBracketIdx ).trim();
     
@@ -30,7 +50,7 @@ function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, 
     let i = prev;
     let ch = "";
     let nOpen = 0;
-    const isMap = start.startsWith("Map");
+    const isMap = /^\(?(\s*)?Map/.test(str);
     let insidePair = false;
     let pairK: FormattedBrackets | undefined = undefined;
 
@@ -52,7 +72,7 @@ function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, 
                     if( elem !== "" ) rest.push([ elem ]);
                     return {
                         formatted: [ start, rest ] as FormattedBrackets,
-                        length: i
+                        offset: i + 1
                     };
                 }
                 else nOpen--;
@@ -112,9 +132,9 @@ function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, 
  */
 export function dataFromStringWithOffset( str: string ): { data: Data, offset: number }
 {
-    const { formatted: words, length } = formatStringByBrackets( str );
+    const { formatted: words, offset } = formatStringByBrackets( str );
 
-    return { data: parseWords( words ), offset: length };
+    return { data: parseWords( words ), offset };
 }
 
 /**
@@ -131,7 +151,7 @@ function parseWords( words: FormattedBrackets ): Data
 {
     let start = words[0];
     while( start.startsWith("(") ) start = start.slice(1);
-    if( start.startsWith("Constr") )
+    if( /^\(?(\s*)?Constr/.test(start) )
     {
         const [_, idxStr] = start.split(" ");
         const idx = BigInt( idxStr );
@@ -142,7 +162,7 @@ function parseWords( words: FormattedBrackets ): Data
         }
         else return dataFromString( words[0] as any );
     }
-    if( start.startsWith("Map") )
+    if( /^\(?(\s*)?Map/.test(start) )
     {
         if( Array.isArray( words[1] ) )
         {
@@ -151,7 +171,7 @@ function parseWords( words: FormattedBrackets ): Data
         }
         else return dataFromString( words[0] );
     }
-    if( start.startsWith("List") )
+    if( /^\(?(\s*)?List/.test(start) )
     {
         if( Array.isArray( words[1] ) )
         {
@@ -166,10 +186,9 @@ function parseWords( words: FormattedBrackets ): Data
     }
     if( start[0] === "B" )
     {
-        const [ _, valStr ] = start.split("#");
-        return new DataB( valStr.trim() );
+        const [ _, valueStr ] = start.split("#");
+        return new DataB( valueStr );
     }
     
-    console.log( words )
-    throw new Error("invalid string to parse Data");
+    throw new Error("invalid string to parse Data; " + JSON.stringify( words ));
 }

@@ -1,4 +1,4 @@
-import { Data, DataB, DataConstr, DataI, DataList, DataMap, DataPair, dataFromCbor, dataFromString } from ".."
+import { Data, DataB, DataConstr, DataI, DataList, DataMap, DataPair, dataFromCbor, dataFromString, dataFromStringWithOffset } from ".."
 
 describe("data.toString", () => {
 
@@ -96,7 +96,7 @@ describe("dataFromString", () => {
                 new DataPair( new DataList([ new DataI(-12364689486) ]), new DataConstr(7,[]) )
             ] as DataPair<Data,Data>[])
         );
-    })
+    });
 
     test("ctx", () => {
 
@@ -108,4 +108,43 @@ describe("dataFromString", () => {
 
         expect( parsed.toString() ).toEqual( str );
     });
+
+    describe.only("with offset", () => {
+
+        test("B #0123456789ABCDEF", () => {
+
+            const str = "B #0123456789ABCDEF";
+            const full = str + ")))\n";
+
+            expect( dataFromStringWithOffset( full ).offset ).toEqual( str.length );
+        })
+
+        test("List [Constr 1 [], I 1234, B #ABCDEF])))", () => {
+            const str = "List [Constr 1 [], I 1234, B #ABCDEF])))";
+            const expected = "List [Constr 1 [], I 1234, B #ABCDEF]";
+
+            const result = dataFromStringWithOffset( str );
+            expect( dataFromString( expected ) ).toEqual( result.data );
+            expect( result.offset ).toEqual( expected.length );
+        });
+
+        test.only("Map [ (B #0123, I 12345), (I 789453, B #456789), (List [I -12364689486], Constr 7 [])]", () => {
+
+            const str = `Map [ (B #0123, I 12345),
+                (I 789453, B #456789),
+                (List [I -12364689486], Constr 7 [])
+            ]`;
+            const withExtra = `
+            Map [ (B #0123, I 12345),
+                  (I 789453, B #456789),
+                  (List [I -12364689486], Constr 7 [])
+                ]
+        ))`;
+
+           
+
+            const result = dataFromStringWithOffset( withExtra );
+        })
+
+    })
 })
