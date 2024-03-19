@@ -1,6 +1,6 @@
 {
   "name": "@harmoniclabs/plutus-data",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -35,7 +35,7 @@
   "homepage": "https://github.com/HarmonicLabs/plutus-data#readme",
   "dependencies": {
     "@harmoniclabs/biguint": "^1.0.0",
-    "@harmoniclabs/crypto": "^0.2.0",
+    "@harmoniclabs/crypto": "^0.2.4",
     "@harmoniclabs/uint8array-utils": "^1.0.0"
   },
   "peerDependencies": {
