@@ -1,4 +1,4 @@
-export function assert( condition: boolean, errorMessage: string | Error , addInfos?: any  ,...args: any[])
+export function assert( condition: boolean, errorMessage: string | Error , addInfos?: any  ,...args: any[]): void
 {
     if( condition ) return;
     

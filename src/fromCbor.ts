@@ -57,35 +57,34 @@ export function dataFromCborObj( cborObj: CborObj ): Data
 
         if(
             // any unrecognized tag
-            tag < BigInt( 0 ) ||
-            !(Object.getPrototypeOf( data ) === CborArray.prototype) ||
-            !( data instanceof CborArray ) // for typescript to be happy
+            tag < BigInt( 0 )
+            || !(data instanceof CborArray)
         )
         {
             // ignore the tag and and treats the object as if it were normal CBOR
             return dataFromCborObj( data )
         }
 
-        if( tag === BigInt( 102 ) )
+        if(
+            tag === BigInt( 102 )
+            // DO NOT REMOVE
+            // THIS IS A FIX TO A EDGE CASE
+            // `cborTagToConstrNumber` will return 102 for cbor tag 1375 ( which is a DataConstr tag 102 )
+            && cborObj.tag !== BigInt( 1375 )
+        )
         {
-            assert(
-                data.array.length === 2 &&
-                data.array[0] instanceof CborUInt &&
-                data.array[1] instanceof CborArray,
-                "invalid fileds for cbor tag 102 while constructing DataConstr"
-            )
+            const dataArr = data.array;
+            if(!(
+                dataArr.length === 2 &&
+                dataArr[0] instanceof CborUInt &&
+                dataArr[1] instanceof CborArray
+            )) throw new Error("invalid fileds for cbor tag 102 while constructing DataConstr");
 
             return new DataConstr(
-                ((data as CborArray).array[0] as CborUInt).num,
-                ((data as CborArray).array[1] as CborArray).array.map( dataFromCborObj )
+                dataArr[0].num,
+                dataArr[1].array.map( dataFromCborObj )
             );
         }
-
-        assert(
-            (Object.getPrototypeOf( data ) === CborArray.prototype) &&
-            ( data instanceof CborArray ), // for typescript to be happy
-            "invalid CBOR fields for DataConstr"
-        );
 
         return new DataConstr(
             tag,
