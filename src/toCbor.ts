@@ -109,7 +109,9 @@ export function dataToCborObj( data: Data ): CborObj
         }
 
         // indefinite length bytes
-        return new CborBytes( fst, chunks );
+        return Array.isArray( chunks ) && chunks.length > 0 ?
+            new CborBytes( [ fst, ...chunks ].map( chunk => new CborBytes( chunk ) ) ) :
+            new CborBytes( fst );
     }
 
     throw new Error(
