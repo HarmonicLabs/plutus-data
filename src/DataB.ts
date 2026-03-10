@@ -1,21 +1,15 @@
-import { ByteString } from "@harmoniclabs/bytestring";
-import { roDescr } from "./utils/roDescr";
+import { fromHex, toHex } from "@harmoniclabs/uint8array-utils";
 
 export class DataB
 {
-    readonly bytes: ByteString
+    readonly bytes: Uint8Array;
 
-    constructor( B: ByteString | Uint8Array | string )
+    constructor( bytes: Uint8Array | string )
     {
-        if(!(B instanceof ByteString)) B = new ByteString( B );
+        if( typeof bytes === "string" ) bytes = fromHex( bytes );
+        if(!( bytes instanceof Uint8Array ) ) throw new TypeError( "invalid bytes passed to constructor" );
 
-        const _bytes = B.clone();
-
-        Object.defineProperties(
-            this, {
-                bytes: { value: _bytes, ...roDescr }
-            }
-        );
+        this.bytes = bytes;
     }
 
     clone(): DataB
@@ -24,13 +18,14 @@ export class DataB
         return new DataB( this.bytes );
     }
 
+    toJSON() { return this.toJson(); }
     toJson()
     {
-        return { bytes: this.bytes.toString() }
+        return { bytes: toHex( this.bytes ) }
     }
 
     toString(): string
     {
-        return `B #${this.bytes.toString()}`
+        return `B #${toHex( this.bytes )}`
     }
 }

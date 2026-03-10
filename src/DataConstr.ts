@@ -1,26 +1,23 @@
-import { CanBeUInteger, forceBigUInt } from "@harmoniclabs/biguint";
 import { Data, isData } from "./Data";
-import { assert } from "./utils/assert";
-import { roDescr } from "./utils/roDescr";
 
 export class DataConstr
 {
     readonly constr: bigint;
     readonly fields: Data[];
 
-    constructor( constr: CanBeUInteger, fields: Data[] )
+    constructor( constr: bigint | number, fields: Data[] )
     {
-        assert(
-            Array.isArray( fields ) && fields.every( isData ),
+        constr = BigInt( constr );
+        if(!(
+            constr >= BigInt( 0 )
+            && Array.isArray( fields )
+            && fields.every( isData )
+        )) throw new TypeError(
             "invalid fields passed to constructor"
         );
 
-        Object.defineProperties(
-            this, {
-                constr: { value: forceBigUInt( constr ), ...roDescr },
-                fields: { value: fields, ...roDescr }
-            }
-        );
+        this.constr = constr;
+        this.fields = fields;
     }
 
     clone(): DataConstr
@@ -31,6 +28,7 @@ export class DataConstr
         );
     }
 
+    toJSON() { return this.toJson(); }
     toJson(): any
     {
         return {

@@ -5,14 +5,13 @@ import { DataConstr, cborTagToConstrNumber } from "./DataConstr";
 import { DataI } from "./DataI";
 import { DataList } from "./DataList";
 import { DataMap } from "./DataMap";
-import { DataPair } from "./DataPair";
-import { assert } from "./utils/assert";
 
 
 export function dataFromCborObj( cborObj: CborObj ): Data
 {
-    assert(
-        isCborObj( cborObj ),
+    if(!(
+        isCborObj( cborObj )
+    )) throw new TypeError(
         "Invalid cborObj to convert to Data"
     );
 
@@ -42,10 +41,10 @@ export function dataFromCborObj( cborObj: CborObj ): Data
     {
         return new DataMap(
             cborObj.map.map( entry => {
-                return new DataPair(
-                    dataFromCborObj( entry.k ),
-                    dataFromCborObj( entry.v )
-                );
+                return {
+                    fst: dataFromCborObj( entry.k ),
+                    snd: dataFromCborObj( entry.v )
+                };
             })
         );
     }

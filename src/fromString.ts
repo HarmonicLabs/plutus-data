@@ -1,4 +1,3 @@
-import { ByteString } from "@harmoniclabs/bytestring";
 import { Data } from "./Data";
 import { DataB } from "./DataB";
 import { DataConstr } from "./DataConstr";

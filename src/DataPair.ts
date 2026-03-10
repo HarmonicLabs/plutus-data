@@ -1,7 +1,8 @@
 import { Data, isData } from "./Data";
-import { assert } from "./utils/assert";
-import { roDescr } from "./utils/roDescr";
 
+/**
+ * @deprecated
+ */
 export class DataPair<DataFst extends Data, DataSnd extends Data>
 {
     readonly fst: DataFst;
@@ -9,16 +10,13 @@ export class DataPair<DataFst extends Data, DataSnd extends Data>
 
     constructor( fst: DataFst, snd: DataSnd )
     {
-        assert(
-            isData( fst ) && isData( snd ),
+        if(!(
+            isData( fst ) && isData( snd )
+        )) throw new TypeError(
             `invalid Data passed to 'DataPair' constructor; fst: ${fst}; snd: ${snd}`
         );
-        Object.defineProperties(
-            this, {
-                fst: { value: fst, ...roDescr },
-                snd: { value: snd, ...roDescr },
-            }
-        );
+        this.fst = fst;
+        this.snd = snd;
     }
 
     clone(): DataPair<DataFst,DataSnd>

@@ -1,26 +1,20 @@
-import { roDescr } from "./utils/roDescr";
 
 export class DataI
 {
     readonly int: bigint
 
-    constructor( I: number | bigint = 0 )
+    constructor( int: number | bigint = 0 )
     {
-        I = BigInt( I );
-        Object.defineProperties(
-            this, {
-                int: { value: I, ...roDescr }
-            }
-        )
+        int = BigInt( int );
+        this.int = int;
     }
 
     clone(): DataI
     {
-        return new DataI(
-            this.int
-        );
+        return new DataI( this.int );
     }
 
+    toJSON() { return this.toJson(); }
     toJson()
     {
         return { int: this.int.toString() }

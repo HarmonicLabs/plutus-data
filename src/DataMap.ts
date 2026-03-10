@@ -1,38 +1,40 @@
+import { isObject } from "@harmoniclabs/obj-utils";
 import { Data, isData } from "./Data";
-import { DataPair } from "./DataPair";
-import { assert } from "./utils/assert";
-import { roDescr } from "./utils/roDescr";
 
-
+export interface KV<DataKey extends Data, DataValue extends Data> {
+    fst: DataKey;
+    snd: DataValue;
+}
 export class DataMap<DataKey extends Data, DataValue extends Data>
 {
-    readonly map: DataPair<DataKey, DataValue>[];
+    readonly map: KV<DataKey, DataValue>[];
 
-    constructor( map: DataPair<DataKey, DataValue>[] )
+    constructor( map: KV<DataKey, DataValue>[] )
     {
-        assert(
+        if(!(
             Array.isArray( map ) &&
             map.every( entry =>
-                entry instanceof DataPair &&
+                isObject( entry ) &&
                 isData( entry.fst ) && isData( entry.snd )
-            ),
+            )
+        )) throw new TypeError(
             "invalid map passed to 'DataPair' constructor"
         );
 
-        Object.defineProperties(
-            this, {
-                map: { value: map, ...roDescr }
-            }
-        );
+        this.map = map;
     }
 
     clone(): DataMap<DataKey,DataValue>
     {
         return new DataMap(
-            this.map.map( pair => pair.clone() )
+            this.map.map( pair => ({
+                fst: pair.fst.clone() as DataKey,
+                snd: pair.snd.clone() as DataValue
+            }) )
         );
     }
 
+    toJSON() { return this.toJson(); }
     toJson(): { map: ({ k: any, v: any })[] }
     {
         return {
@@ -47,6 +49,6 @@ export class DataMap<DataKey extends Data, DataValue extends Data>
 
     toString(): string
     {
-        return `Map [${this.map.map( dataPair => dataPair.toString() ).join(",")}]`
+        return `Map [${this.map.map( dataPair => `(${dataPair.fst.toString()},${dataPair.fst.toString()})` ).join(",")}]`
     }
 }

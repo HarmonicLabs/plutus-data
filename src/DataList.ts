@@ -1,6 +1,4 @@
 import { Data, isData } from "./Data";
-import { assert } from "./utils/assert";
-import { roDescr } from "./utils/roDescr";
 
 
 export class DataList
@@ -9,17 +7,14 @@ export class DataList
     
     constructor( list: Data[] )
     {
-        assert(
+        if(!(
             Array.isArray( list ) &&
-            list.every( isData ),
+            list.every( isData )
+        )) throw new TypeError(
             "invalid list passed to constructor"
         );
         
-        Object.defineProperties(
-            this, {
-                list: { value: list, ...roDescr }
-            }
-        );
+        this.list = list;
     }
     
     clone(): DataList
@@ -29,6 +24,7 @@ export class DataList
         );
     }
 
+    toJSON() { return this.toJson(); }
     toJson(): { list: any[] }
     {
         return {

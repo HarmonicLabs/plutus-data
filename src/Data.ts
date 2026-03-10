@@ -1,3 +1,4 @@
+import { toHex } from "@harmoniclabs/uint8array-utils";
 import { DataB } from "./DataB";
 import { DataConstr } from "./DataConstr";
 import { DataI } from "./DataI";
@@ -21,14 +22,13 @@ function isSomething( something: any ): boolean
 export function isData( something: any ): something is Data
 {
     if( !isSomething( something ) ) return false;
-    const proto = Object.getPrototypeOf( something );
 
     return (
-        proto === DataConstr.prototype ||
-        proto === DataMap.prototype    ||
-        proto === DataList.prototype   ||
-        proto === DataI.prototype      ||
-        proto === DataB.prototype
+        something instanceof DataConstr ||
+        something instanceof DataMap    ||
+        something instanceof DataList   ||
+        something instanceof DataI      ||
+        something instanceof DataB
     );
 }
 
@@ -39,27 +39,22 @@ export function eqData( a: Data, b: Data ): boolean
         isSomething( b )
     )) return false;
     
-    const aProto = Object.getPrototypeOf( a );
-    const bProto = Object.getPrototypeOf( b );
-
-    if( aProto !== bProto ) return false;
-
-    if( aProto === DataConstr.prototype )
+    if( a instanceof DataConstr )
     {
-        try {
-            return (
-                (a as DataConstr).constr === (b as DataConstr).constr &&
-                (a as DataConstr).fields.length === (b as DataConstr).fields.length &&
-                (a as DataConstr).fields.every(
-                    (aField, idx) => eqData( aField, (b as DataConstr).fields[ idx ] ) 
-                )
-            );
-        } catch (e) {
-            return false;
-        }
+        if(!(
+            b instanceof DataConstr
+        )) return false;
+        return (
+            a.constr === b.constr &&
+            a.fields.length === b.fields.length &&
+            a.fields.every(
+                (aField, idx) => eqData( aField, b.fields[ idx ] ) 
+            )
+        );
     }
-    if( aProto === DataMap.prototype )
+    if( a instanceof DataMap )
     {
+        if(!(b instanceof DataMap)) return false;
         type D = DataMap<Data,Data>;
         const aMap = (a as D).map; 
         const bMap = (b as D).map; 
@@ -76,24 +71,27 @@ export function eqData( a: Data, b: Data ): boolean
             )
         );
     }
-    if( aProto === DataList.prototype )
+    if( a instanceof DataList )
     {
+        if(!(b instanceof DataList)) return false;
         return (
-            (a as DataList).list.every(
-                ( elem, idx ) => eqData( elem, (b as DataList).list[ idx ] )
+            a.list.every(
+                ( elem, idx ) => eqData( elem, b.list[ idx ] )
             ) 
         );
     }
-    if( aProto === DataI.prototype )
+    if( a instanceof DataI )
     {
+        if(!( b instanceof DataI )) return false;
         return (
-            (a as DataI).int === (b as DataI).int
+            a.int === b.int
         );
     }
-    if( aProto === DataB.prototype )
+    if( a instanceof DataB )
     {
+        if(!( b instanceof DataB )) return false;
         return (
-            (a as DataB).bytes.toString() === (b as DataB).bytes.toString()
+            toHex( a.bytes ) === toHex( b.bytes )
         );
     }
 

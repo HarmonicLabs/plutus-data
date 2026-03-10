@@ -9,5 +9,5 @@ export function hashData( data: Data ): Uint8Array
         "hashData only works with Data"
     );
 
-    return blake2b_256( dataToCbor( data ).toBuffer() )
+    return blake2b_256( dataToCbor( data ) )
 }

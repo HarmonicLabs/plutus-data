@@ -5,7 +5,6 @@ import { DataList } from "./DataList";
 import { DataI } from "./DataI";
 import { DataB } from "./DataB";
 import { CborObj, CborArray, CborUInt, CborTag, CborMap, CborNegInt, CborBytes, CborString, Cbor } from "@harmoniclabs/cbor";
-import { assert } from "./utils/assert";
 import { fromHex } from "@harmoniclabs/uint8array-utils";
 
 const minBigInt = BigInt("-18446744073709551616"); // -(2n ** 64n)
@@ -13,8 +12,9 @@ const maxBigInt = BigInt("18446744073709551615");  // (2n ** 64n) - 1n
 
 export function dataToCborObj( data: Data ): CborObj 
 {
-    assert(
-        isData( data ),
+    if(!(
+        isData( data )
+    )) throw new TypeError(
         "Invalid data; cannot convert to CBOR"
     );
 
@@ -86,7 +86,7 @@ export function dataToCborObj( data: Data ): CborObj
     }
     if( data instanceof DataB )
     {
-        const bytes = data.bytes.toBuffer();
+        const bytes = data.bytes;
         
         // definite length only if length <= 64
         if( bytes.length <= 64 ) return new CborBytes( bytes );
@@ -119,13 +119,7 @@ export function dataToCborObj( data: Data ): CborObj
     );
 }
 
-export function dataToCbor( data: Data ): CborString
+export function dataToCbor( data: Data ): Uint8Array
 {
     return Cbor.encode( dataToCborObj( data ) );
-}
-
-function positiveIntegerToBytes( n: bigint ): Uint8Array
-{
-    const hex = n.toString(16);
-    return fromHex( (hex.length % 2) === 0 ? hex : "0" + hex ); 
 }
