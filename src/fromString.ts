@@ -110,7 +110,7 @@ function formatStringByBrackets( str: string ): { formatted: FormattedBrackets, 
                     {
                         if( insidePair )
                         {
-                            if( str[prev] === "," ) prev++;
+                            while( prev < i && /[\s,]/.test(str[prev]) ) prev++;
                             if( str[prev] === "(" ) prev++;
                             pairK = formatStringByBrackets( str.substring( prev, i ) ).formatted;
                             prev = i + 1;
