@@ -1,5 +1,7 @@
 import { isObject } from "@harmoniclabs/obj-utils";
 import { Data, isData } from "./Data";
+import { SubCborRef } from "@harmoniclabs/cbor";
+import { getDataCborRef, setDataCborRef } from "./cborRef";
 
 export interface KV<DataKey extends Data, DataValue extends Data> {
     fst: DataKey;
@@ -9,7 +11,7 @@ export class DataMap<DataKey extends Data, DataValue extends Data>
 {
     readonly map: KV<DataKey, DataValue>[];
 
-    constructor( map: KV<DataKey, DataValue>[] )
+    constructor( map: KV<DataKey, DataValue>[], cborRef?: SubCborRef )
     {
         if(!(
             Array.isArray( map ) &&
@@ -22,6 +24,16 @@ export class DataMap<DataKey extends Data, DataValue extends Data>
         );
 
         this.map = map;
+        setDataCborRef( this, cborRef );
+    }
+
+    /**
+     * the bytes this value was decoded from (`dataFromCborObj`), emitted
+     * verbatim by `dataToCbor`; `undefined` for constructed values
+     */
+    get cborRef(): SubCborRef | undefined
+    {
+        return getDataCborRef( this );
     }
 
     clone(): DataMap<DataKey,DataValue>
@@ -30,7 +42,8 @@ export class DataMap<DataKey extends Data, DataValue extends Data>
             this.map.map( pair => ({
                 fst: pair.fst.clone() as DataKey,
                 snd: pair.snd.clone() as DataValue
-            }) )
+            }) ),
+            this.cborRef?.clone()
         );
     }
 

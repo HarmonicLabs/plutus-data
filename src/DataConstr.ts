@@ -1,11 +1,13 @@
 import { Data, isData } from "./Data";
+import { SubCborRef } from "@harmoniclabs/cbor";
+import { getDataCborRef, setDataCborRef } from "./cborRef";
 
 export class DataConstr
 {
     readonly constr: bigint;
     readonly fields: Data[];
 
-    constructor( constr: bigint | number, fields: Data[] )
+    constructor( constr: bigint | number, fields: Data[], cborRef?: SubCborRef )
     {
         constr = BigInt( constr );
         if(!(
@@ -18,13 +20,24 @@ export class DataConstr
 
         this.constr = constr;
         this.fields = fields;
+        setDataCborRef( this, cborRef );
+    }
+
+    /**
+     * the bytes this value was decoded from (`dataFromCborObj`), emitted
+     * verbatim by `dataToCbor`; `undefined` for constructed values
+     */
+    get cborRef(): SubCborRef | undefined
+    {
+        return getDataCborRef( this );
     }
 
     clone(): DataConstr
     {
         return new DataConstr(
             this.constr,
-            this.fields.map( dataElem => dataElem.clone() )
+            this.fields.map( dataElem => dataElem.clone() ),
+            this.cborRef?.clone()
         );
     }
 

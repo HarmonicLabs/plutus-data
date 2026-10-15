@@ -5,6 +5,7 @@ import { DataConstr } from "./DataConstr";
 import { DataI } from "./DataI";
 import { DataList } from "./DataList";
 import { DataMap } from "./DataMap";
+import { cborObjSubRef } from "./cborRef";
 
 /**
  * Note [The 64-byte limit] (plutus-core `PlutusCore.Data`, the decoder
@@ -83,20 +84,21 @@ export function dataFromCborObj( cborObj: CborObj ): Data
     {
         const magnitude = bigNumMagnitude( cborObj );
         if( magnitude ) assertBoundedBytes( magnitude, "bignum magnitude" );
-        return new DataI( cborObj.num );
+        return new DataI( cborObj.num, cborObjSubRef( cborObj ) );
     }
 
     if( cborObj instanceof CborBytes )
     {
         assertBoundedBytes( cborObj, "byte string" );
         // `bytes` property concats the chunks for us
-        return new DataB( cborObj.bytes );
+        return new DataB( cborObj.bytes, cborObjSubRef( cborObj ) );
     }
 
     if( cborObj instanceof CborArray )
     {
         return new DataList(
-            cborObj.array.map( cObj => dataFromCborObj( cObj ) )
+            cborObj.array.map( cObj => dataFromCborObj( cObj ) ),
+            cborObjSubRef( cborObj )
         );
     }
 
@@ -108,7 +110,8 @@ export function dataFromCborObj( cborObj: CborObj ): Data
                     fst: dataFromCborObj( entry.k ),
                     snd: dataFromCborObj( entry.v )
                 };
-            })
+            }),
+            cborObjSubRef( cborObj )
         );
     }
 
@@ -121,7 +124,8 @@ export function dataFromCborObj( cborObj: CborObj ): Data
         {
             return new DataConstr(
                 tag - BigInt( 121 ),
-                dataListFromCborObj( data, "constructor fields" )
+                dataListFromCborObj( data, "constructor fields" ),
+                cborObjSubRef( cborObj )
             );
         }
 
@@ -129,7 +133,8 @@ export function dataFromCborObj( cborObj: CborObj ): Data
         {
             return new DataConstr(
                 tag - BigInt( 1273 ),
-                dataListFromCborObj( data, "constructor fields" )
+                dataListFromCborObj( data, "constructor fields" ),
+                cborObjSubRef( cborObj )
             );
         }
 
@@ -146,7 +151,8 @@ export function dataFromCborObj( cborObj: CborObj ): Data
 
             return new DataConstr(
                 dataArr[0].num,
-                dataListFromCborObj( dataArr[1], "constructor fields" )
+                dataListFromCborObj( dataArr[1], "constructor fields" ),
+                cborObjSubRef( cborObj )
             );
         }
 

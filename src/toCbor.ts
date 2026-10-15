@@ -5,7 +5,7 @@ import { DataList } from "./DataList";
 import { DataI } from "./DataI";
 import { DataB } from "./DataB";
 import { CborObj, CborArray, CborUInt, CborTag, CborMap, CborNegInt, CborBytes, CborString, Cbor } from "@harmoniclabs/cbor";
-import { fromHex } from "@harmoniclabs/uint8array-utils";
+import { getDataCborRef } from "./cborRef";
 
 const minBigInt = BigInt("-18446744073709551616"); // -(2n ** 64n)
 const maxBigInt = BigInt("18446744073709551615");  // (2n ** 64n) - 1n
@@ -17,6 +17,10 @@ export function dataToCborObj( data: Data ): CborObj
     )) throw new TypeError(
         "Invalid data; cannot convert to CBOR"
     );
+
+    // decoded Data: the source bytes, as cardano-ledger keeps them
+    const ref = getDataCborRef( data );
+    if( ref ) return Cbor.parse( ref.toBuffer() );
 
     if( data instanceof DataConstr )
     {
@@ -119,7 +123,17 @@ export function dataToCborObj( data: Data ): CborObj
     );
 }
 
+/**
+ * CBOR of `data`: the exact bytes it was decoded from when it came from
+ * `dataFromCbor` / `dataFromCborObj` (see `cborRef`), the canonical
+ * encoding otherwise (fields of a constructed value keep their own bytes)
+ */
 export function dataToCbor( data: Data ): Uint8Array
 {
+    if( isData( data ) )
+    {
+        const ref = getDataCborRef( data );
+        if( ref ) return ref.toBuffer();
+    }
     return Cbor.encode( dataToCborObj( data ) );
 }

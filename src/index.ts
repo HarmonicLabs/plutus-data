@@ -9,5 +9,6 @@ export * from "./DataPair";
 export * from "./fromCbor";
 export * from "./fromString";
 export * from "./toCbor";
+export { getDataCborRef } from "./cborRef";
 export * from "./hashData";
 export * from "./toData/interface";
