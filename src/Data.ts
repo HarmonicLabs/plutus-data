@@ -74,7 +74,11 @@ export function eqData( a: Data, b: Data ): boolean
     if( a instanceof DataList )
     {
         if(!(b instanceof DataList)) return false;
+        // two lists of different lengths are different lists: without the length,
+        // a list equalled every longer list it is a prefix of (and `[]` every list),
+        // which is not Plutus' `equalsData` (`(==)` on `Data`)
         return (
+            a.list.length === b.list.length &&
             a.list.every(
                 ( elem, idx ) => eqData( elem, b.list[ idx ] )
             ) 

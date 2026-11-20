@@ -62,6 +62,7 @@ export class DataMap<DataKey extends Data, DataValue extends Data>
 
     toString(): string
     {
-        return `Map [${this.map.map( dataPair => `(${dataPair.fst.toString()},${dataPair.fst.toString()})` ).join(",")}]`
+        // (key, value): the text the Plutus tools write and read for a map
+        return `Map [${this.map.map( dataPair => `(${dataPair.fst.toString()},${dataPair.snd.toString()})` ).join(",")}]`
     }
 }

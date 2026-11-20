@@ -12,6 +12,33 @@ describe("data.toString", () => {
 
 });
 
+describe("DataMap.toString", () => {
+
+    // It wrote the key twice, `(key,key)`: a script context printed for a reader, or as a
+    // constant in the text of a program, showed every value of every map (the lovelace of an
+    // output, the tokens of a policy) as a copy of its key — and a program printed with such a
+    // constant and read again was another program.
+    test("an entry is written ( key, value )", () => {
+
+        const map = new DataMap([
+            new DataPair( new DataB( "" ), new DataMap([ new DataPair( new DataB( "" ), new DataI( 2_000_000 ) ) ]) ),
+            new DataPair( new DataI( 7 ), new DataList([ new DataB( "ff" ), new DataConstr( 1, [] ) ]) ),
+        ]);
+        expect( map.toString() ).toEqual( "Map [(B #,Map [(B #,I 2000000)]),(I 7,List [B #ff,Constr 1 []])]" );
+        expect( new DataMap([]).toString() ).toEqual( "Map []" );
+    });
+
+    test("and reads back as the same map", () => {
+
+        const map = new DataMap([
+            new DataPair( new DataI( 1 ), new DataB( "caffee" ) ),
+            new DataPair( new DataB( "00" ), new DataI( -5 ) ),
+        ]);
+        expect( dataFromString( map.toString() ).toString() ).toEqual( map.toString() );
+        expect( ( dataFromString( map.toString() ) as DataMap<any, any> ).map[0].snd.toString() ).toEqual( "B #caffee" );
+    });
+});
+
 describe("dataFromString", () => {
 
     test("I", () => {
@@ -125,7 +152,7 @@ describe("dataFromString", () => {
         expect( parsed.toString() ).toEqual( str );
     });
 
-    describe.only("with offset", () => {
+    describe("with offset", () => {
 
         test("B #0123456789ABCDEF", () => {
 
